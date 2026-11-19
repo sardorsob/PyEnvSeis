@@ -93,9 +93,19 @@ catalogue = build_catalogue(
         ModelCandidate("D", 1.2, 2.5 / 2650),
         ModelCandidate("E", 1.2, 5 / 2650),
     ],
-    d_s=0.07, s_s=0.5, r_s=2650, w_w=11, a_w=0.1,
-    r_0=14, f_0=1, q_0=20, v_0=1200, p_0=0.48,
-    n_0_a=0.8, n_0_b=1.0, e_0=0.17,
+    d_s=0.07,
+    s_s=0.5,
+    r_s=2650,
+    w_w=11,
+    a_w=0.1,
+    r_0=14,
+    f_0=1,
+    q_0=20,
+    v_0=1200,
+    p_0=0.48,
+    n_0_a=0.8,
+    n_0_b=1.0,
+    e_0=0.17,
 )
 assert catalogue.combined_db.shape == (5, 100)
 ```

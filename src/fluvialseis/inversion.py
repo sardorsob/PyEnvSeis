@@ -76,8 +76,9 @@ def fit_eseis_catalogue(
 def _catalogue(
     candidate_ids: Sequence[str], candidate_power: ArrayLike, frequency_count: int
 ) -> tuple[tuple[str, ...], NDArray[np.float64]]:
+    # Keep the public validation error consistent for malformed candidate IDs.
     if isinstance(candidate_ids, str):
-        raise ValueError("candidate_ids must be a sequence of unique, non-empty strings")
+        raise ValueError("candidate_ids must be a sequence of unique, non-empty strings")  # noqa: TRY004
     ids = tuple(candidate_ids)
     if not ids or any(not isinstance(name, str) or not name for name in ids):
         raise ValueError("candidate_ids must be a sequence of unique, non-empty strings")
