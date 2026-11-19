@@ -35,9 +35,7 @@ sample_rate_hz = 256
 time_s = np.arange(1024) / sample_rate_hz
 velocity_m_s = 2e-6 * np.sin(2 * np.pi * 32 * time_s)
 
-spectrum = periodogram(
-    velocity_m_s, sample_rate_hz=sample_rate_hz, window="boxcar", detrend=False
-)
+spectrum = periodogram(velocity_m_s, sample_rate_hz=sample_rate_hz, window="boxcar", detrend=False)
 peak_hz = spectrum.frequency_hz[np.argmax(spectrum.power)]
 print(f"Peak: {peak_hz:g} Hz")  # Peak: 32 Hz
 ```
@@ -122,9 +120,19 @@ observed = clip_eseis_spectrogram(raw, frequency_range_hz=(5, 120), resolution=1
 
 catalogue = build_catalogue(
     observed.frequency_hz,
-    candidates=[ModelCandidate("shallow", 0.2, 0), ModelCandidate("deeper", 1.2, 2.5/2650)],
-    d_s=0.07, s_s=0.5, r_s=2650, w_w=11, a_w=0.1,
-    r_0=14, f_0=1, q_0=20, v_0=1200, p_0=0.48, n_0_a=0.8, n_0_b=1.0,
+    candidates=[ModelCandidate("shallow", 0.2, 0), ModelCandidate("deeper", 1.2, 2.5 / 2650)],
+    d_s=0.07,
+    s_s=0.5,
+    r_s=2650,
+    w_w=11,
+    a_w=0.1,
+    r_0=14,
+    f_0=1,
+    q_0=20,
+    v_0=1200,
+    p_0=0.48,
+    n_0_a=0.8,
+    n_0_b=1.0,
 )
 fit = fit_eseis_catalogue(
     observed.power_db,

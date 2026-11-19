@@ -285,8 +285,9 @@ def model_bedload(
         raise ValueError("q_s must be nonnegative")
     if r_s <= _WATER_DENSITY:
         raise ValueError("r_s must exceed the fluid density (1000 kg/m³)")
+    # Keep ValueError as the model input-validation exception.
     if not isinstance(adjust, (bool, np.bool_)):
-        raise ValueError("adjust must be a boolean")
+        raise ValueError("adjust must be a boolean")  # noqa: TRY004
 
     with np.errstate(over="ignore", under="ignore", invalid="ignore", divide="ignore"):
         propagation = _propagation(frequency, r_0=r_0, f_0=f_0, q_0=q_0, v_0=v_0, p_0=p_0, e_0=e_0)
@@ -339,9 +340,18 @@ def build_catalogue(
 
     turbulence = np.empty((len(rows), frequency.size), dtype=np.float64)
     bedload = np.empty_like(turbulence)
-    reach = dict(
-        d_s=d_s, s_s=s_s, r_s=r_s, w_w=w_w, a_w=a_w, r_0=r_0, f_0=f_0, q_0=q_0, v_0=v_0, p_0=p_0
-    )
+    reach = {
+        "d_s": d_s,
+        "s_s": s_s,
+        "r_s": r_s,
+        "w_w": w_w,
+        "a_w": a_w,
+        "r_0": r_0,
+        "f_0": f_0,
+        "q_0": q_0,
+        "v_0": v_0,
+        "p_0": p_0,
+    }
     for index, candidate in enumerate(rows):
         try:
             turbulence[index] = model_turbulence(
