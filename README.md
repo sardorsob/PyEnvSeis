@@ -9,6 +9,9 @@ Version 0.1.0a2 is a research preview for CPython 3.12–3.14. The package
 distribution and Python import are named `fluvialseis`. Pass waveform samples
 as arrays after reading and calibrating them with your seismic data tools.
 
+See the [user guide](GUIDE.md) for a full inversion example, the R function
+mapping, and the numerical comparison results.
+
 ## Install
 
 From a local checkout, run:
