@@ -38,3 +38,26 @@ def test_rejects_ambiguous_or_incompatible_catalogues(frequency, ids, rows):
     )
     with pytest.raises(ValueError):
         fit_catalogue(observed, frequency_hz=frequency, candidate_ids=ids, candidate_power=rows)
+
+
+def test_eseis_matcher_accepts_db_and_preserves_row_order_and_missing_windows():
+    from fluvialseis.inversion import fit_eseis_catalogue
+
+    references = [[-100, -90, -80], [-100, -90, -80], [-92, -80, -70]]
+    observations = [[-100, -93, -84], [-92, -80, -70], [np.nan, -90, -80]]
+    fit = fit_eseis_catalogue(
+        observations, candidate_ids=["first", "duplicate", "other"], candidate_power_db=references
+    )
+    assert fit.candidate_ids == ("first", "other", None)
+    np.testing.assert_allclose(fit.rmse_db, [5 / np.sqrt(3), 0, np.nan])
+    np.testing.assert_allclose(fit.residual_db[0], [0, 3, 4])
+    assert fit.margin_db[0] == 0
+    assert fit.margin_db[1] > 0
+    assert np.isnan(fit.residual_db[2]).all()
+
+
+def test_eseis_matcher_rejects_mismatched_frequency_dimensions():
+    from fluvialseis.inversion import fit_eseis_catalogue
+
+    with pytest.raises(ValueError, match="frequency"):
+        fit_eseis_catalogue([[-95, -90]], candidate_ids=["a"], candidate_power_db=[[-95]])

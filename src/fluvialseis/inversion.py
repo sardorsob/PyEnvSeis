@@ -36,6 +36,46 @@ def fit_catalogue(
     grid = _frequency_grid(frequency_hz)
     if not np.array_equal(grid, observed.frequency_hz):
         raise ValueError("catalogue and observed frequency grids must match")
+    ids, catalogue = _catalogue(candidate_ids, candidate_power, grid.size)
+    if not np.isfinite(catalogue).all() or np.any(catalogue <= 0):
+        raise ValueError("candidate_power must be finite and strictly positive")
+    shape = (observed.start_samples.size, grid.size)
+    if observed.power.shape != shape or observed.valid.shape != (shape[0],):
+        raise ValueError("observed power and validity must match the window and frequency axes")
+
+    observed_db = np.full(shape, np.nan)
+    positive = (observed.power > 0) & np.isfinite(observed.power)
+    np.log10(observed.power, out=observed_db, where=positive)
+    return _fit_db(10 * observed_db, 10 * np.log10(catalogue), ids, observed.valid)
+
+
+def fit_eseis_catalogue(
+    observed_power_db: ArrayLike,
+    *,
+    candidate_ids: Sequence[str],
+    candidate_power_db: ArrayLike,
+) -> FitResult:
+    """Match already aligned spectra using the eseis unweighted dB RMSE.
+
+    Supply observations in (window, frequency) order and references in
+    (candidate, frequency) order, with identical frequencies in each column.
+    The first candidate wins an exact tie. Windows with nonfinite values are
+    skipped. Bin residuals are absolute differences in dB.
+    """
+    if np.iscomplexobj(observed_power_db):
+        raise ValueError("observed_power_db must be real")
+    observed = np.ma.asarray(observed_power_db, dtype=np.float64).filled(np.nan)
+    if observed.ndim != 2 or observed.shape[1] == 0:
+        raise ValueError("observed_power_db must have shape (window, frequency)")
+    ids, catalogue = _catalogue(candidate_ids, candidate_power_db, observed.shape[1])
+    if not np.isfinite(catalogue).all():
+        raise ValueError("candidate_power_db must be finite")
+    return _fit_db(observed, catalogue, ids, np.ones(observed.shape[0], dtype=bool))
+
+
+def _catalogue(
+    candidate_ids: Sequence[str], candidate_power: ArrayLike, frequency_count: int
+) -> tuple[tuple[str, ...], NDArray[np.float64]]:
     if isinstance(candidate_ids, str):
         raise ValueError("candidate_ids must be a sequence of unique, non-empty strings")
     ids = tuple(candidate_ids)
@@ -46,24 +86,24 @@ def fit_catalogue(
     if np.iscomplexobj(candidate_power) or np.ma.is_masked(candidate_power):
         raise ValueError("candidate_power must be real and unmasked")
     catalogue = np.asarray(candidate_power, dtype=np.float64)
-    if catalogue.shape != (len(ids), grid.size):
+    if catalogue.shape != (len(ids), frequency_count):
         raise ValueError("candidate_power must have shape (candidate, frequency)")
-    if not np.isfinite(catalogue).all() or np.any(catalogue <= 0):
-        raise ValueError("candidate_power must be finite and strictly positive")
-    shape = (observed.start_samples.size, grid.size)
-    if observed.power.shape != shape or observed.valid.shape != (shape[0],):
-        raise ValueError("observed power and validity must match the window and frequency axes")
+    return ids, catalogue
 
-    reference_db = 10 * np.log10(catalogue)
-    selected: list[str | None] = [None] * shape[0]
-    rmse = np.full(shape[0], np.nan)
-    margin = np.full(shape[0], np.nan)
-    residual = np.full(shape, np.nan)
-    for row in np.flatnonzero(observed.valid):
-        power = observed.power[row]
-        if np.any(power <= 0) or not np.isfinite(power).all():
-            continue
-        differences = reference_db - 10 * np.log10(power)
+
+def _fit_db(
+    observed_db: NDArray[np.float64],
+    reference_db: NDArray[np.float64],
+    ids: tuple[str, ...],
+    valid: NDArray[np.bool_],
+) -> FitResult:
+    window_count = observed_db.shape[0]
+    selected: list[str | None] = [None] * window_count
+    rmse = np.full(window_count, np.nan)
+    margin = np.full(window_count, np.nan)
+    residual = np.full(observed_db.shape, np.nan)
+    for row in np.flatnonzero(valid & np.isfinite(observed_db).all(axis=1)):
+        differences = reference_db - observed_db[row]
         scores = np.sqrt(np.mean(differences**2, axis=1))
         best = int(np.argmin(scores))
         selected[row] = ids[best]

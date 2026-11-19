@@ -1,13 +1,13 @@
 cff-version: 1.2.0
-message: "If you use FluvialSeis, please cite this software and the methods relevant to your analysis."
-title: "FluvialSeis"
+message: "If you use PyEnvSeis, please cite this software and the methods relevant to your analysis."
+title: "PyEnvSeis"
 type: software
 authors:
   - family-names: Sobirov
     given-names: Sardor
-version: 0.1.0a1
+version: 0.1.0a2
 license: MIT
-repository-code: "https://github.com/sardorsob/FluvialSeis"
+repository-code: "https://github.com/sardorsob/PyEnvSeis"
 references:
   - type: article
     title: "The R package eseis – a software toolbox for environmental seismology"

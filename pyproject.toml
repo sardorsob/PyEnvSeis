@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fluvialseis"
-version = "0.1.0a1"
-description = "Native Python tools for seismic power spectra and catalogue matching in fluvial seismology"
+version = "0.1.0a2"
+description = "Native Python spectra and fluvial model inversion for environmental seismology"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
@@ -28,8 +28,8 @@ dependencies = ["numpy>=2.1", "scipy>=1.15"]
 test = ["pytest>=8.4", "ruff>=0.12", "mypy>=1.17"]
 
 [project.urls]
-Repository = "https://github.com/sardorsob/FluvialSeis"
-Issues = "https://github.com/sardorsob/FluvialSeis/issues"
+Repository = "https://github.com/sardorsob/PyEnvSeis"
+Issues = "https://github.com/sardorsob/PyEnvSeis/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fluvialseis"]
